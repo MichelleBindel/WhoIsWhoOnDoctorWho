@@ -1,4 +1,4 @@
-# DigitalWhomanities
+# WhoIsWhoOnDoctorWho
 DHProject Doctor Who Social Network Analysis
 
 **Project idea:** 
