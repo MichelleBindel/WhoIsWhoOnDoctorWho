@@ -32,20 +32,31 @@ scriptData_byEpisode <- split(scriptsData, scriptsData$episodeid)
 #now we have 145 dataframes with the individual episodes inside
 
 library(plyr)
+episodesList <- list()
 
 
 #loop through episodes, for each episode do:
 for (i in scriptData_byEpisode) {
   
+  sceneNum=0
+  #y=0 #end of scene
+
+  episodeID=i[1, "episodeid"]
   
-  #split i (episode) on occurance of type=="location" into different scenes
+  df<-data.frame("episodeidCol"=episodeID,"sceneIdCol"=sceneNum, "idxCol"=i[1, "idx"], "nameOfSpeaker"=i[1, "details"])
   
+  #loop through all rows of episode i
+  for (row in 1:nrow(i)){
+    
+    #print(i[row, ])
+    if (i[row, "type"]=="location") { #increase scene counter
+      sceneNum = sceneNum+1
+    }
+    else { #Hier liegt das Problem! rbind scheint die neue Zeile der Szene nicht mit dem dataframe df zu binden. 
+      rbind(df, data.frame(episodeidCol=episodeID,sceneIdCol=sceneNum, idxCol=i[row, "idx"], nameOfSpeaker=i[row, "details"]))
+      }
+  }
+  #end of Episode,add df to episodes-list
+ episodesList[[length(episodesList)+1]] <-df
   
 }
-
-#split episodes into scences by looping through the episodes list we just created
-#desired_length <- 145 # 145 episodes...
-#episodesList <- vector(mode = "list", length = desired_length)
-#desired_length2 <- 1000 #we have to see how many scenes there are
-#sceneList <- vector(mode = "list", length = desired_length2) #container for scenes added to episodelist
-
