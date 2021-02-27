@@ -1,3 +1,5 @@
+library(plyr)
+library(dplyr)
 library(tidyverse)
 
 # load all csv files
@@ -21,6 +23,26 @@ scriptsData[!duplicated(scriptsData$doctorid), ]
 
 scriptsData <- subset(scriptsData, type=="talk" | type=="location")
 
+#change all "Doctor"s to their corresponding numbered Doctors
+for (row in 1:nrow(scriptsData)){
+  doc <- scriptsData[row, "details"]
+  if (!is.na(doc)){
+    if (doc=="DOCTOR"){
+      doctor <-c("Doctor")
+      doctor <- c(doctor, scriptsData[row, "doctorid"])
+      scriptsData[row, "details"]<-toString(doctor)
+    }
+  }
+}
+rm(doc); rm(doctor); rm(doctorB); rm(row)
+
+#create non-duplicate list of all characters to create node file for Gephi
+charDF = distinct(na.omit(as.data.frame(scriptsData[, "details"])))
+id <- rownames(charDF)
+charDF <- cbind(id=id, charDF)
+write.csv(charDF,"nodes.csv", row.names = FALSE)
+
+
 #create dateframes for each episode
 #group by episode id
 #episodeGroups <- scriptsData %>% group_by(episodeid)
@@ -31,14 +53,14 @@ scriptData_byEpisode <- split(scriptsData, scriptsData$episodeid)
 
 #now we have 145 dataframes with the individual episodes inside
 
-library(plyr)
 episodesList <- list()
-
+speakersOverall <- c()
 
 #loop through episodes, for each episode do:
 for (i in scriptData_byEpisode) {
   
   sceneNum=0
+  speakersInScene<-c(i[1, "details"])
   #y=0 #end of scene
 
   episodeID=i[1, "episodeid"]
@@ -52,11 +74,22 @@ for (i in scriptData_byEpisode) {
     if (i[row, "type"]=="location") { #increase scene counter
       sceneNum = sceneNum+1
     }
-    else { #Hier liegt das Problem! rbind scheint die neue Zeile der Szene nicht mit dem dataframe df zu binden. 
-      rbind(df, data.frame(episodeidCol=episodeID,sceneIdCol=sceneNum, idxCol=i[row, "idx"], nameOfSpeaker=i[row, "details"]))
+    else { 
+      speaker=i[row, "details"]
+      if(!(speaker %in% speakersInScene)){
+      df = rbind(df, data.frame(episodeidCol=episodeID,sceneIdCol=sceneNum, idxCol=i[row, "idx"], nameOfSpeaker=speaker))
+      speakersInScene<-c(speakersInScene, speaker)
+      }
       }
   }
   #end of Episode,add df to episodes-list
  episodesList[[length(episodesList)+1]] <-df
-  
+ rm(speakersInScene)
 }
+
+rm(i);rm(df);rm(row);rm(sceneNum);rm(episodeID);rm(speaker) #remove unused variables
+
+# TODO: - exchange name of speaker on episodesList with ID from charDF
+#       - create combinations of all characters within a scene
+#       - create DF with columns: source, target, type (undirected), weight (1?) with source/target for each combination of characters 
+#       - create edges.csv from DF
