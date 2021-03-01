@@ -89,6 +89,18 @@ for (i in scriptData_byEpisode) {
 
 rm(i);rm(df);rm(row);rm(sceneNum);rm(episodeID);rm(speaker) #remove unused variables
 
+#exchange name of speaker on episodesList with ID from charDF(Vorschlag, verstehe den Fehler nicht)
+
+for (i in episodesList) {
+ for (nameOfSpeaker in 1:144) {
+   if(nameOfSpeaker == scriptsData[, "details"](charDF)) {
+     nameOfSpeaker <- id(charDF)}
+   }
+  }
+
+# Fehlermeldung: Fehler in scriptsData[, "details"](charDF) : Versuch eine Nicht-Funktion anzuwenden
+
+
 # TODO: - exchange name of speaker on episodesList with ID from charDF
 #       - create combinations of all characters within a scene
 #       - create DF with columns: source, target, type (undirected), weight (1?) with source/target for each combination of characters 
