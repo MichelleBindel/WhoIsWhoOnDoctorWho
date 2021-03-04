@@ -118,6 +118,7 @@ rm(df); rm(i); rm(j); rm(x)
 
 combinations <- combinations[order(combinations$Var1),]
 combinations <- aggregate(cbind(combinations[0],"weight"=1), combinations, length) # count how often combinations are present
+combinations <- combinations[combinations$weight > 5, ]
 names(combinations)[1] <- "source"
 names(combinations)[2] <- "target"
 
