@@ -85,7 +85,7 @@ charDF <- cbind(id=id, charDF)
 names(charDF)[2]<-paste("details")  # works
 
 #rename column details to labels
-colnames(charDF)[2] <- "labels"
+colnames(charDF)[2] <- "label"
 
 #remove rows with characters that don't make sense
 #see list with removed characters in removedChar
