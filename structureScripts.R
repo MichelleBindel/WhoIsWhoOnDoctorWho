@@ -83,8 +83,19 @@ charDF = distinct(na.omit(as.data.frame(scriptsData[, "details"])))
 id <- rownames(charDF)
 charDF <- cbind(id=id, charDF)
 names(charDF)[2]<-paste("details")  # works
+
+#rename column details to labels
+colnames(charDF)[2] <- "labels"
+
+#remove rows with characters that don't make sense
+#see list with removed characters in removedChar
+removedChar <- charDF[c(31, 32, 45, 75, 249, 277, 297, 550, 566, 582, 656), ]
+charDF <- charDF[-c(31, 32, 45, 75, 249, 277, 297, 550, 566, 582, 656), ]
+
 write.csv(charDF,"nodes.csv", row.names = FALSE)
 
+#rename column labels to details
+colnames(charDF)[2] <- "details"
 
 #exchange speaker names with IDs through a lookup table (named vector)
 getSpeakerID <- charDF$id
