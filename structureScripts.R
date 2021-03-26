@@ -219,5 +219,9 @@ type <- rep("undirected", nrow(combinationsRating2))
 combinationsRating2 <- cbind(combinationsRating2, type)
 names(combinationsRating2)[4] <- "type"
 
+# remove edges that connect characters with themselves
+combinations <- subset(combinations, source!=target)
+combinationsRating2 <- subset(combinationsRating2, source!=target)
+
 write.csv(combinations,"edges.csv", row.names = FALSE)
 write.csv(combinationsRating2,"edgesWithRatings.csv", row.names = FALSE)
