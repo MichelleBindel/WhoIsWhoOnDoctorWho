@@ -83,19 +83,8 @@ charDF = distinct(na.omit(as.data.frame(scriptsData[, "details"])))
 id <- rownames(charDF)
 charDF <- cbind(id=id, charDF)
 names(charDF)[2]<-paste("details")  # works
-
-#rename column details to labels
-colnames(charDF)[2] <- "label"
-
-#remove rows with characters that don't make sense
-#see list with removed characters in removedChar
-removedChar <- charDF[c(31, 32, 45, 75, 249, 277, 297, 550, 566, 582, 656), ]
-charDF <- charDF[-c(31, 32, 45, 75, 249, 277, 297, 550, 566, 582, 656), ]
-
 write.csv(charDF,"nodes.csv", row.names = FALSE)
 
-#rename column labels to details
-colnames(charDF)[2] <- "details"
 
 #exchange speaker names with IDs through a lookup table (named vector)
 getSpeakerID <- charDF$id
@@ -173,13 +162,11 @@ rm(df); rm(i); rm(j); rm(x); rm(rating);# rm(imdbData)
 combinationsRating <- combinations
 vectorOfRatings <- c(0)
 
-#vectorOfRatings <- c(vectorOfRatings, rep(ratingsOverview[2, 2], ratingsOverview[2, 1]))
-#vectorOfRatings <- c(vectorOfRatings, rep(ratingsOverview[3, 2], ratingsOverview[3, 1]-ratingsOverview[2, 1]))
 
 row2 = ratingsOverview[1,]
 
+#add rating to relations
 for (i in 1:(nrow(ratingsOverview))) {
-  
   row <- ratingsOverview[i,]
   vectorOfRatings <- c(vectorOfRatings, rep(row[[2]], (row[[1]]-row2[[1]])))
   row2<-row
@@ -189,20 +176,32 @@ rm(row); rm(row2)
 vectorOfRatings = vectorOfRatings[-1]
 combinationsRating <- cbind(combinationsRating, "ratings"=vectorOfRatings)
 
-combinationsRating2 <- combinationsRating %>% group_by(Var1, Var2) %>% summarise(weight=sum(ratings))
+combinationsRating3 <- combinationsRating %>% group_by(Var1, Var2) %>% summarise(weight=sum(ratings))
+combinationsRating3 = combinationsRating3[-1, ]
+
+combinationsRating2 <- combinationsRating %>% group_by(Var1, Var2) %>% summarise(weight=mean(ratings))
 combinationsRating2 = combinationsRating2[-1, ]
-combinationsRating2 <- combinationsRating2[combinationsRating2$weight > 5,]
-names(combinationsRating2)[1] <- "source"
-names(combinationsRating2)[2] <- "target"
 
-#combinationsWithout2 <- subset(combinations, select = -c(rating))
-#combinationsWithout2 <- ddply(combinationsWithout2,.(Var1,Var2),nrow)
-#combinationsWithout2 <- combinationsWithout2[combinationsWithout2$V1 > 5, ]
+#create df with sum AND mean of weight
+combinationsRating4 <- cbind(combinationsRating3, combinationsRating2$weight)
 
-#combinationsWithout <- subset(combinations, select = -c(rating))
-#591: 1-1 / 12693 obs ->
-#combinationsWithout <- aggregate(cbind(combinationsWithout[0],"weight"=1), combinationsWithout, length) # count how often combinations are present
-#combinationsWithout <- combinationsWithout[combinationsWithout$weight > 5, ]
+combinationsRating4 <- combinationsRating4[combinationsRating4$weight > 10,]
+combinationsRating3 <- combinationsRating3[combinationsRating3$weight > 10,]
+rm(combinationsRating2)
+
+
+combinationsRating5 = subset(combinationsRating4, select = -c(weight))
+rm(combinationsRating4)
+
+
+names(combinationsRating3)[1] <- "source"
+names(combinationsRating3)[2] <- "target"
+
+names(combinationsRating5)[1] <- "source"
+names(combinationsRating5)[2] <- "target"
+names(combinationsRating5)[3] <- "weight"
+
+
 
 
 
@@ -215,13 +214,14 @@ names(combinations)[2] <- "target"
 
 type <- rep("undirected", nrow(combinations))
 combinations <- cbind(combinations, type)
-type <- rep("undirected", nrow(combinationsRating2))
-combinationsRating2 <- cbind(combinationsRating2, type)
-names(combinationsRating2)[4] <- "type"
+type <- rep("undirected", nrow(combinationsRating3))
+combinationsRating3 <- cbind(combinationsRating3, type)
+combinationsRating5 <- cbind(combinationsRating5, type)
 
-# remove edges that connect characters with themselves
-combinations <- subset(combinations, source!=target)
-combinationsRating2 <- subset(combinationsRating2, source!=target)
+names(combinationsRating3)[4] <- "type"
+names(combinationsRating5)[4] <- "type"
+
 
 write.csv(combinations,"edges.csv", row.names = FALSE)
-write.csv(combinationsRating2,"edgesWithRatings.csv", row.names = FALSE)
+write.csv(combinationsRating3,"edgesWithRatings.csv", row.names = FALSE)
+write.csv(combinationsRating5,"edgesWithRatingsMean.csv", row.names = FALSE)
