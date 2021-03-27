@@ -221,6 +221,9 @@ combinationsRating5 <- cbind(combinationsRating5, type)
 names(combinationsRating3)[4] <- "type"
 names(combinationsRating5)[4] <- "type"
 
+combinations <- subset(combinations, source!=target)
+combinationsRating3 <- subset(combinationsRating3, source!=target)
+combinationsRating5 <- subset(combinationsRating5, source!=target)
 
 write.csv(combinations,"edges.csv", row.names = FALSE)
 write.csv(combinationsRating3,"edgesWithRatings.csv", row.names = FALSE)
